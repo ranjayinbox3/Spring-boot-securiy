@@ -36,7 +36,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		.antMatchers(HttpMethod.DELETE,"/management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
 		.antMatchers(HttpMethod.GET,"/management/api/**").hasAnyRole(ApplicationUserRole.ADMINTRAINEE.name(),
 				ApplicationUserRole.ADMIN.name())
-		.anyRequest().authenticated().and().httpBasic();
+		.anyRequest().authenticated().and()
+		.formLogin().loginPage("/login").permitAll().defaultSuccessUrl("/courses")
+		.passwordParameter("password")//paramiter names must match with names with front end name
+		.usernameParameter("username").and()//if u r changing here then u must change in front end
+		.rememberMe()
+		.rememberMeParameter("remember-me")
+		.and().logout().logoutSuccessUrl("/logout") //by default log out url called with GET method we should use POST method
+		.clearAuthentication(true)					// if csrf is enable then use POST if not enable then u can use GET
+		.invalidateHttpSession(true)
+		.deleteCookies("remeber-me","JSESSIONID")
+		.logoutSuccessUrl("/login");
     }
 
 	@Override
