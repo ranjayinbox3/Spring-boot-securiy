@@ -5,17 +5,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 import com.springsecurity.springsecuritydemo.Utils.ApplicationUserPermission;
 import com.springsecurity.springsecuritydemo.Utils.ApplicationUserRole;
+import com.springsecurity.springsecuritydemo.auth.ApplicationUserService;
 @Configuration
 @EnableWebSecurity
 //@EnableGlobalMethodSecurity(prePostEnabled = true)//annotation for permission based authorities
@@ -25,6 +24,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //	private DataSource dataSource;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	@Autowired
+	private ApplicationUserService applicationUserDetailsService;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -48,30 +49,48 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		.deleteCookies("remeber-me","JSESSIONID")
 		.logoutSuccessUrl("/login");
     }
-
+	
+	
+	
 	@Override
-	@Bean
-	protected UserDetailsService userDetailsService() {
-		UserDetails userranjay = User.builder().username("userranjay")
-				.password(passwordEncoder.encode("passranjay"))
-				//.roles(ApplicationUserRole.STUDENT.name())
-				.authorities(ApplicationUserRole.STUDENT.getGrantedAuthorities())
-				.build();
-		
-		UserDetails adminranjay = User.builder().username("adminranjay")
-				.password(passwordEncoder.encode("passranjay"))
-				//.roles(ApplicationUserRole.ADMIN.name())
-				.authorities(ApplicationUserRole.ADMIN.getGrantedAuthorities())
-				.build();
-		
-		UserDetails admintraineeranjay = User.builder().username("admintraineeranjay")
-				.password(passwordEncoder.encode("passranjay"))
-				//.roles(ApplicationUserRole.ADMINTRAINEE.name())
-				.authorities(ApplicationUserRole.ADMINTRAINEE.getGrantedAuthorities())
-				.build();
-		
-		return new InMemoryUserDetailsManager(userranjay,adminranjay,admintraineeranjay);
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.authenticationProvider(daoAuthenticationProvider());
 	}
+
+
+
+	@Bean
+	public DaoAuthenticationProvider daoAuthenticationProvider() {
+		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+		provider.setPasswordEncoder(passwordEncoder);
+		provider.setUserDetailsService(applicationUserDetailsService);
+		return provider;
+	}
+
+	/*
+	 * @Override
+	 * 
+	 * @Bean protected UserDetailsService userDetailsService() { UserDetails
+	 * userranjay = User.builder().username("userranjay")
+	 * .password(passwordEncoder.encode("passranjay"))
+	 * //.roles(ApplicationUserRole.STUDENT.name())
+	 * .authorities(ApplicationUserRole.STUDENT.getGrantedAuthorities()) .build();
+	 * 
+	 * UserDetails adminranjay = User.builder().username("adminranjay")
+	 * .password(passwordEncoder.encode("passranjay"))
+	 * //.roles(ApplicationUserRole.ADMIN.name())
+	 * .authorities(ApplicationUserRole.ADMIN.getGrantedAuthorities()) .build();
+	 * 
+	 * UserDetails admintraineeranjay =
+	 * User.builder().username("admintraineeranjay")
+	 * .password(passwordEncoder.encode("passranjay"))
+	 * //.roles(ApplicationUserRole.ADMINTRAINEE.name())
+	 * .authorities(ApplicationUserRole.ADMINTRAINEE.getGrantedAuthorities())
+	 * .build();
+	 * 
+	 * return new
+	 * InMemoryUserDetailsManager(userranjay,adminranjay,admintraineeranjay); }
+	 */
 	
 	
 	
